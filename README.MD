@@ -13,7 +13,7 @@ A entrega e a defesa deste projeto são de extrema importância, valendo um tota
 Conforme as diretrizes obrigatórias estabelecidas no edital do trabalho, a equipe é composta por estudantes da disciplina, onde todos os integrantes constam como contribuidores ativos no projeto do GitHub e realizaram pelo menos um commit no ecossistema da aplicação:
 
 * **João Victor Matos** - [GitHub Profile](https://github.com/JoaoVictorMatos)
-* **[Nome do Integrante 2]** - [GitHub Profile](https://github.com/)
+* **Lucas de Oliveira Pereira** - [GitHub Profile](https://github.com/lucaspereirap7)
 * **[Nome do Integrante 3]** - [GitHub Profile](https://github.com/) (Se aplicável)
 
 ---
@@ -62,6 +62,134 @@ A infraestrutura do projeto foi totalmente preparada utilizando Docker para que 
 
 ### Pré-requisitos
 * Possuir o **Docker** e o **Docker Compose** instalados na máquina de desenvolvimento.
+
+### Passo a passo para executar
+1. Suba os serviços do banco e da aplicação:
+
+```bash
+docker compose up --build
+```
+
+2. Em outro terminal, aplique as migrações no banco:
+
+```bash
+docker compose run --rm web python manage.py migrate
+```
+
+3. Crie um usuário administrador para acessar o painel `/admin`:
+
+```bash
+docker compose run --rm web python manage.py createsuperuser
+```
+
+4. Abra a aplicação em:
+
+```text
+http://localhost:8000/admin/
+```
+
+### Situação atual para o checkpoint1
+* A modelagem do banco já está definida em `tarefas/models.py`.
+* O admin já está registrado em `tarefas/admin.py`.
+* O projeto já possui `manage.py`, `core/urls.py` e `core/wsgi.py`, então pode ser executado via Django.
+
+---
+
+### Como rodar (modo rápido)
+
+1. Subir containers:
+
+```bash
+docker compose up --build -d
+```
+
+2. Aplicar migrações:
+
+```bash
+docker compose run --rm web python manage.py migrate
+```
+
+3. Criar superusuário:
+
+```bash
+docker compose run --rm web python manage.py createsuperuser
+```
+
+Se precisar de uma conta de demonstração rápida (apenas para apresentação local):
+
+```powershell
+$env:DJANGO_SUPERUSER_PASSWORD='Admin1234'; docker compose run --rm web python manage.py createsuperuser --noinput --username admin --email admin@example.com
+```
+
+Abra o admin em:
+
+```text
+http://localhost:8000/admin/
+```
+
+---
+
+### Arquivo `.env` (opcional)
+
+Você pode usar um `.env` com essas variáveis ao rodar os comandos acima no mesmo terminal:
+
+```
+DB_NAME=kanban_db
+DB_USER=postgres_admin
+DB_PASSWORD=senha_secreta_gac116
+DB_HOST=db
+DB_PORT=5432
+DEBUG=1
+SECRET_KEY=django-insecure-dev-key-change-me
+ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+```
+
+Troque `SECRET_KEY` e `DB_PASSWORD` antes de publicar o projeto.
+
+---
+
+### Popular dados de demonstração (opcional)
+
+Para inserir alguns registros básicos use o shell do Django:
+
+```bash
+docker compose run --rm web python manage.py shell
+
+# cole no shell:
+from tarefas.models import Departamento, Projeto, Tarefa
+from django.contrib.auth import get_user_model
+User = get_user_model()
+dept = Departamento.objects.create(nome='TI', descricao='Tecnologia')
+proj = Projeto.objects.create(nome='Projeto Demo', descricao='Projeto para checkpoint1', prazo='2026-12-31')
+user = User.objects.filter(is_superuser=False).first()
+Tarefa.objects.create(titulo='Tarefa exemplo', descricao='Descrição', projeto=proj, responsavel=user, status='BACKLOG', prioridade='MEDIA')
+exit()
+```
+
+---
+
+### Parar e remover
+
+```bash
+docker compose down
+# para remover volumes (apaga dados do banco):
+docker compose down -v
+```
+
+---
+
+### Executar sem Docker (opcional)
+
+```bash
+python -m venv .venv
+source .venv/bin/activate   # ou .venv\Scripts\Activate.ps1 no Windows
+pip install -r requirements.txt
+export DB_NAME=kanban_db DB_USER=postgres_admin DB_PASSWORD=senha_secreta_gac116 DB_HOST=localhost
+python manage.py migrate
+python manage.py runserver
+```
+
+---
 
 
    
