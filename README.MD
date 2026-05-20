@@ -14,7 +14,7 @@ Conforme as diretrizes obrigatórias estabelecidas no edital do trabalho, a equi
 
 * **João Victor Matos** - [GitHub Profile](https://github.com/JoaoVictorMatos)
 * **Lucas de Oliveira Pereira** - [GitHub Profile](https://github.com/lucaspereirap7)
-* **[Nome do Integrante 3]** - [GitHub Profile](https://github.com/) (Se aplicável)
+* **Arthur Rafael Silva Nunes** - [GitHub Profile](https://github.com/ArthurSilvaN)
 
 ---
 
@@ -32,7 +32,7 @@ O escopo do sistema foi projetado para simular um ambiente corporativo de alta p
 
 ### Requisitos Não Funcionais (RNF)
 * **RNF001 - Persistência Relacional Robustecida:** Uso obrigatório de um banco de dados relacional (PostgreSQL) focado na integridade referencial dos dados corporativos.
-* **RNF002 - Interface Amigável e Responsiva:** A interface do usuário deve se adaptar de forma fluida a telas de smartphones, tablets e desktops utilizando o framework Bootstra.
+* **RNF002 - Interface Amigável e Responsiva:** A interface do usuário deve se adaptar de forma fluida a telas de smartphones, tablets e desktops utilizando o framework Bootstrap.
 * **RNF003 - Portabilidade e Isolamento de Ambiente:** Utilização de conteinerização com Docker para garantir que o projeto rode com as mesmas dependências em qualquer sistema operacional.
 * **RNF004 - Versionamento Colaborativo:** Controle de versão e histórico de alterações gerenciados estritamente via Git e hospedado em repositório público no GitHub.
 

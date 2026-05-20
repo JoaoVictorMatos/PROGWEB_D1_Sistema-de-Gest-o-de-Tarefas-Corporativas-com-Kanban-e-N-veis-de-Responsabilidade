@@ -9,9 +9,20 @@ class Departamento(models.Model):
         return self.nome
 
 class PerfilUsuario(models.Model):
+    NIVEL_CHOICES = [
+        ('COLABORADOR', 'Colaborador'),
+        ('LIDER', 'Líder de Equipe'),
+        ('GERENTE', 'Gerente'),
+        ('DIRETOR', 'Diretor'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='perfil')
     departamento = models.ForeignKey(Departamento, on_delete=models.SET_NULL, null=True, blank=True)
     cargo = models.CharField(max_length=100)
+    nivel_responsabilidade = models.CharField(
+        max_length=20, choices=NIVEL_CHOICES, default='COLABORADOR',
+        verbose_name="Nível de Responsabilidade"
+    )
 
     def __str__(self):
         return f"{self.user.get_full_name() or self.user.username} - {self.cargo}"
