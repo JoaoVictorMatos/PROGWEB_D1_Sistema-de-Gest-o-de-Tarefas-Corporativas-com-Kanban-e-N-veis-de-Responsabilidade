@@ -53,7 +53,7 @@ DATABASES = {
         'NAME': os.environ.get('DB_NAME', 'kanban_db'),
         'USER': os.environ.get('DB_USER', 'postgres_admin'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'senha_secreta_gac116'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'HOST': os.environ.get('DB_HOST', 'db'),
         'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
