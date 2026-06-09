@@ -11,7 +11,6 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
-    important: true,
     theme: {
       extend: {
         colors: {
@@ -23,6 +22,81 @@
 </script>
 
 <style>
+  /* ─── Força modo claro: sobrescreve as variáveis CSS do Django Admin dark mode ─── */
+  :root {
+    --primary: #4a90e2 !important;
+    --accent: #2980b9 !important;
+    --primary-fg: #fff !important;
+    --body-fg: #333333 !important;
+    --body-bg: #f5f7fa !important;
+    --body-quiet-color: #666666 !important;
+    --body-loud-color: #000000 !important;
+    --header-bg: #4a90e2 !important;
+    --header-link-color: #ffffff !important;
+    --breadcrumbs-fg: #ffffff !important;
+    --breadcrumbs-link-fg: #ffffff !important;
+    --breadcrumbs-bg: #3a80d2 !important;
+    --link-fg: #4a90e2 !important;
+    --link-hover-color: #2980b9 !important;
+    --link-selected-fg: #2980b9 !important;
+    --hairline-color: #e5e7eb !important;
+    --border-color: #d1d5db !important;
+    --error-fg: #dc2626 !important;
+    --message-success-bg: #f0fdf4 !important;
+    --message-warning-bg: #fffbeb !important;
+    --message-error-bg: #fef2f2 !important;
+    --darkened-bg: #f8fafc !important;
+    --selected-bg: #eff6ff !important;
+    --selected-row: #fefce8 !important;
+    --button-fg: #ffffff !important;
+    --button-bg: #4a90e2 !important;
+    --button-hover-bg: #2980b9 !important;
+    --default-button-bg: #27ae60 !important;
+    --default-button-hover-bg: #1e8449 !important;
+    --delete-button-bg: #dc2626 !important;
+    --delete-button-hover-bg: #b91c1c !important;
+    --close-button-bg: #6b7280 !important;
+    --close-button-hover-bg: #4b5563 !important;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --primary: #4a90e2 !important;
+      --accent: #2980b9 !important;
+      --primary-fg: #fff !important;
+      --body-fg: #333333 !important;
+      --body-bg: #f5f7fa !important;
+      --body-quiet-color: #666666 !important;
+      --body-loud-color: #000000 !important;
+      --header-bg: #4a90e2 !important;
+      --header-link-color: #ffffff !important;
+      --breadcrumbs-fg: #ffffff !important;
+      --breadcrumbs-link-fg: #ffffff !important;
+      --breadcrumbs-bg: #3a80d2 !important;
+      --link-fg: #4a90e2 !important;
+      --link-hover-color: #2980b9 !important;
+      --link-selected-fg: #2980b9 !important;
+      --hairline-color: #e5e7eb !important;
+      --border-color: #d1d5db !important;
+      --error-fg: #dc2626 !important;
+      --message-success-bg: #f0fdf4 !important;
+      --message-warning-bg: #fffbeb !important;
+      --message-error-bg: #fef2f2 !important;
+      --darkened-bg: #f8fafc !important;
+      --selected-bg: #eff6ff !important;
+      --selected-row: #fefce8 !important;
+      --button-fg: #ffffff !important;
+      --button-bg: #4a90e2 !important;
+      --button-hover-bg: #2980b9 !important;
+      --default-button-bg: #27ae60 !important;
+      --default-button-hover-bg: #1e8449 !important;
+      --delete-button-bg: #dc2626 !important;
+      --delete-button-hover-bg: #b91c1c !important;
+      --close-button-bg: #6b7280 !important;
+      --close-button-hover-bg: #4b5563 !important;
+    }
+  }
+
   /* ─── Layout base ─── */
   html, body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
