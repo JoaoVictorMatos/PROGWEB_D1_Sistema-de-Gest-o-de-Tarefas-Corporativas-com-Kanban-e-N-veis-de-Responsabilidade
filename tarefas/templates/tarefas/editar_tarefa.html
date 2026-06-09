@@ -32,7 +32,7 @@
                             <label for="status" class="form-label">Status *</label>
                             <select class="form-select" id="status" name="status" required>
                                 {% for value, label in status_choices %}
-                                <option value="{{ value }}" {% if tarefa.status==value %}selected{% endif %}>
+                                <option value="{{ value }}" {% if tarefa.status == value %}selected{% endif %}>
                                     {{ label }}
                                 </option>
                                 {% endfor %}
@@ -43,7 +43,7 @@
                             <label for="prioridade" class="form-label">Prioridade *</label>
                             <select class="form-select" id="prioridade" name="prioridade" required>
                                 {% for value, label in prioridade_choices %}
-                                <option value="{{ value }}" {% if tarefa.prioridade==value %}selected{% endif %}>
+                                <option value="{{ value }}" {% if tarefa.prioridade == value %}selected{% endif %}>
                                     {{ label }}
                                 </option>
                                 {% endfor %}
@@ -57,8 +57,7 @@
                             <select class="form-select" id="responsavel" name="responsavel">
                                 <option value="">Não atribuído</option>
                                 {% for usuario in usuarios %}
-                                <option value="{{ usuario.id }}" {% if tarefa.responsavel.id==usuario.id %}selected{%
-                                    endif %}>
+                                <option value="{{ usuario.id }}" {% if tarefa.responsavel.id == usuario.id %}selected{% endif %}>
                                     {{ usuario.get_full_name|default:usuario.username }}
                                 </option>
                                 {% endfor %}

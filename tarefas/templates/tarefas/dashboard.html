@@ -1,235 +1,381 @@
 {% extends 'tarefas/base.html' %}
 
-{% block title %}Dashboard - Sistema de Gestão de Tarefas{% endblock %}
+{% block title %}Dashboard - TaskBoard{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ghost / drag states */
+  .kanban-ghost {
+    opacity: 0.35;
+    background: #bfdbfe !important;
+    border: 2px dashed #2563eb !important;
+    border-radius: 0.45rem;
+  }
+  .kanban-dragging {
+    opacity: 0.95;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.22) !important;
+    transform: rotate(1.5deg) scale(1.03) !important;
+  }
+
+  /* toast de feedback */
+  #kanban-toast {
+    position: fixed;
+    bottom: 1.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    min-width: 200px;
+    text-align: center;
+    display: none;
+    pointer-events: none;
+  }
+  #kanban-toast .alert {
+    border-radius: 2rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h1 class="mb-4">
-            <i class="bi bi-speedometer2"></i> Dashboard
-        </h1>
-    </div>
+<div class="d-flex align-items-center mb-4 gap-3">
+  <h1 class="mb-0 fw-bold" style="font-size:1.6rem;">
+    <i class="bi bi-speedometer2 text-primary me-2"></i>Dashboard
+  </h1>
 </div>
 
-<!-- Estatísticas -->
-<div class="row mb-4">
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="stats-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-            <h5>{{ total_tarefas }}</h5>
-            <p>Total de Tarefas</p>
-        </div>
+<!-- ── Estatísticas ── -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3">
+    <div class="stats-card" style="background: linear-gradient(135deg,#6366f1,#8b5cf6);">
+      <h5 id="stat-total">{{ total_tarefas }}</h5>
+      <p>Total de Tarefas</p>
     </div>
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-            <h5>{{ tarefas_concluidas_count }}</h5>
-            <p>Concluídas</p>
-        </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stats-card" style="background: linear-gradient(135deg,#059669,#10b981);">
+      <h5 id="stat-concluidas">{{ tarefas_concluidas_count }}</h5>
+      <p>Concluídas</p>
     </div>
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
-            <h5>{{ tarefas_em_andamento.count }}</h5>
-            <p>Em Andamento</p>
-        </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stats-card" style="background: linear-gradient(135deg,#2563eb,#3b82f6);">
+      <h5 id="stat-andamento">{{ tarefas_em_andamento.count }}</h5>
+      <p>Em Andamento</p>
     </div>
-    <div class="col-md-6 col-lg-3 mb-3">
-        <div class="stats-card" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
-            <h5>{{ tarefas_a_fazer.count }}</h5>
-            <p>A Fazer</p>
-        </div>
+  </div>
+  <div class="col-6 col-lg-3">
+    <div class="stats-card" style="background: linear-gradient(135deg,#d97706,#f59e0b);">
+      <h5 id="stat-a-fazer">{{ tarefas_a_fazer.count }}</h5>
+      <p>A Fazer</p>
     </div>
+  </div>
 </div>
 
-<!-- Kanban Board -->
-<div class="row">
-    <div class="col-lg-12">
-        <h2 class="mb-4">
-            <i class="bi bi-kanban"></i> Quadro Kanban
-        </h2>
-    </div>
+<!-- ── Quadro Kanban ── -->
+<div class="d-flex align-items-center mb-3 gap-2">
+  <h2 class="mb-0 fw-bold" style="font-size:1.25rem;">
+    <i class="bi bi-kanban text-primary me-1"></i> Quadro Kanban
+  </h2>
+  <span class="text-muted" style="font-size:0.82rem;">— arraste os cards para mover entre colunas</span>
 </div>
 
 <div class="row g-3">
-    <!-- Backlog -->
-    <div class="col-md-6 col-lg-4 col-xl-2.4">
-        <div class="kanban-column">
-            <h5 class="mb-3">
-                <span class="badge bg-secondary">Backlog</span>
-                <span class="badge bg-light text-dark">{{ tarefas_backlog.count }}</span>
-            </h5>
-            <div class="kanban-cards">
-                {% for tarefa in tarefas_backlog %}
-                <div class="card kanban-card status-backlog">
-                    <div class="card-body p-3">
-                        <h6 class="card-title" style="font-size: 0.9rem;">{{ tarefa.titulo }}</h6>
-                        <p class="card-text" style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">
-                            {{ tarefa.descricao|truncatewords:10 }}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-light text-dark" style="font-size: 0.75rem;">
-                                {{ tarefa.projeto.nome }}
-                            </span>
-                            <span class="prioridade-{{ tarefa.prioridade|lower }}">
-                                <i class="bi bi-flag-fill"></i>
-                            </span>
-                        </div>
-                        <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">
-                            Ver
-                        </a>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted text-center">Nenhuma tarefa</p>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
 
-    <!-- A Fazer -->
-    <div class="col-md-6 col-lg-4 col-xl-2.4">
-        <div class="kanban-column">
-            <h5 class="mb-3">
-                <span class="badge bg-warning">A Fazer</span>
-                <span class="badge bg-light text-dark">{{ tarefas_a_fazer.count }}</span>
-            </h5>
-            <div class="kanban-cards">
-                {% for tarefa in tarefas_a_fazer %}
-                <div class="card kanban-card status-a-fazer">
-                    <div class="card-body p-3">
-                        <h6 class="card-title" style="font-size: 0.9rem;">{{ tarefa.titulo }}</h6>
-                        <p class="card-text" style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">
-                            {{ tarefa.descricao|truncatewords:10 }}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-light text-dark" style="font-size: 0.75rem;">
-                                {{ tarefa.projeto.nome }}
-                            </span>
-                            <span class="prioridade-{{ tarefa.prioridade|lower }}">
-                                <i class="bi bi-flag-fill"></i>
-                            </span>
-                        </div>
-                        <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">
-                            Ver
-                        </a>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted text-center">Nenhuma tarefa</p>
-                {% endfor %}
+  <!-- Backlog -->
+  <div class="col-md-6 col-xl">
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <span class="kanban-col-dot" style="background:var(--s-backlog);"></span>
+        <span class="kanban-column-title">Backlog</span>
+        <span class="kanban-count" id="cnt-BACKLOG">{{ tarefas_backlog.count }}</span>
+      </div>
+      <div class="kanban-cards" data-status="BACKLOG" data-stat-id="none">
+        {% for tarefa in tarefas_backlog %}
+        <div class="card kanban-card status-backlog" data-pk="{{ tarefa.id }}" data-status="BACKLOG">
+          <div class="card-body p-3">
+            <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+            <h6 class="card-title mb-1" style="font-size:0.875rem;padding-right:1rem;">{{ tarefa.titulo }}</h6>
+            <p class="text-muted mb-2" style="font-size:0.78rem;">{{ tarefa.descricao|truncatewords:10 }}</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge-projeto">{{ tarefa.projeto.nome }}</span>
+              <span class="prioridade-{{ tarefa.prioridade|lower }}" title="{{ tarefa.get_prioridade_display }}">
+                <i class="bi bi-flag-fill"></i>
+              </span>
             </div>
+            <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">Ver</a>
+          </div>
         </div>
+        {% empty %}
+        <p class="text-muted text-center kanban-empty" style="font-size:0.82rem;">Nenhuma tarefa</p>
+        {% endfor %}
+      </div>
     </div>
+  </div>
 
-    <!-- Em Andamento -->
-    <div class="col-md-6 col-lg-4 col-xl-2.4">
-        <div class="kanban-column">
-            <h5 class="mb-3">
-                <span class="badge bg-info">Em Andamento</span>
-                <span class="badge bg-light text-dark">{{ tarefas_em_andamento.count }}</span>
-            </h5>
-            <div class="kanban-cards">
-                {% for tarefa in tarefas_em_andamento %}
-                <div class="card kanban-card status-em-andamento">
-                    <div class="card-body p-3">
-                        <h6 class="card-title" style="font-size: 0.9rem;">{{ tarefa.titulo }}</h6>
-                        <p class="card-text" style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">
-                            {{ tarefa.descricao|truncatewords:10 }}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-light text-dark" style="font-size: 0.75rem;">
-                                {{ tarefa.projeto.nome }}
-                            </span>
-                            <span class="prioridade-{{ tarefa.prioridade|lower }}">
-                                <i class="bi bi-flag-fill"></i>
-                            </span>
-                        </div>
-                        <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">
-                            Ver
-                        </a>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted text-center">Nenhuma tarefa</p>
-                {% endfor %}
+  <!-- A Fazer -->
+  <div class="col-md-6 col-xl">
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <span class="kanban-col-dot" style="background:var(--s-a-fazer);"></span>
+        <span class="kanban-column-title">A Fazer</span>
+        <span class="kanban-count" id="cnt-A_FAZER">{{ tarefas_a_fazer.count }}</span>
+      </div>
+      <div class="kanban-cards" data-status="A_FAZER">
+        {% for tarefa in tarefas_a_fazer %}
+        <div class="card kanban-card status-a-fazer" data-pk="{{ tarefa.id }}" data-status="A_FAZER">
+          <div class="card-body p-3">
+            <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+            <h6 class="card-title mb-1" style="font-size:0.875rem;padding-right:1rem;">{{ tarefa.titulo }}</h6>
+            <p class="text-muted mb-2" style="font-size:0.78rem;">{{ tarefa.descricao|truncatewords:10 }}</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge-projeto">{{ tarefa.projeto.nome }}</span>
+              <span class="prioridade-{{ tarefa.prioridade|lower }}" title="{{ tarefa.get_prioridade_display }}">
+                <i class="bi bi-flag-fill"></i>
+              </span>
             </div>
+            <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">Ver</a>
+          </div>
         </div>
+        {% empty %}
+        <p class="text-muted text-center kanban-empty" style="font-size:0.82rem;">Nenhuma tarefa</p>
+        {% endfor %}
+      </div>
     </div>
+  </div>
 
-    <!-- Em Revisão -->
-    <div class="col-md-6 col-lg-4 col-xl-2.4">
-        <div class="kanban-column">
-            <h5 class="mb-3">
-                <span class="badge bg-danger">Em Revisão</span>
-                <span class="badge bg-light text-dark">{{ tarefas_revisao.count }}</span>
-            </h5>
-            <div class="kanban-cards">
-                {% for tarefa in tarefas_revisao %}
-                <div class="card kanban-card status-revisao">
-                    <div class="card-body p-3">
-                        <h6 class="card-title" style="font-size: 0.9rem;">{{ tarefa.titulo }}</h6>
-                        <p class="card-text" style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">
-                            {{ tarefa.descricao|truncatewords:10 }}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-light text-dark" style="font-size: 0.75rem;">
-                                {{ tarefa.projeto.nome }}
-                            </span>
-                            <span class="prioridade-{{ tarefa.prioridade|lower }}">
-                                <i class="bi bi-flag-fill"></i>
-                            </span>
-                        </div>
-                        <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">
-                            Ver
-                        </a>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted text-center">Nenhuma tarefa</p>
-                {% endfor %}
+  <!-- Em Andamento -->
+  <div class="col-md-6 col-xl">
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <span class="kanban-col-dot" style="background:var(--s-andamento);"></span>
+        <span class="kanban-column-title">Em Andamento</span>
+        <span class="kanban-count" id="cnt-EM_ANDAMENTO">{{ tarefas_em_andamento.count }}</span>
+      </div>
+      <div class="kanban-cards" data-status="EM_ANDAMENTO">
+        {% for tarefa in tarefas_em_andamento %}
+        <div class="card kanban-card status-em-andamento" data-pk="{{ tarefa.id }}" data-status="EM_ANDAMENTO">
+          <div class="card-body p-3">
+            <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+            <h6 class="card-title mb-1" style="font-size:0.875rem;padding-right:1rem;">{{ tarefa.titulo }}</h6>
+            <p class="text-muted mb-2" style="font-size:0.78rem;">{{ tarefa.descricao|truncatewords:10 }}</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge-projeto">{{ tarefa.projeto.nome }}</span>
+              <span class="prioridade-{{ tarefa.prioridade|lower }}" title="{{ tarefa.get_prioridade_display }}">
+                <i class="bi bi-flag-fill"></i>
+              </span>
             </div>
+            <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">Ver</a>
+          </div>
         </div>
+        {% empty %}
+        <p class="text-muted text-center kanban-empty" style="font-size:0.82rem;">Nenhuma tarefa</p>
+        {% endfor %}
+      </div>
     </div>
+  </div>
 
-    <!-- Concluído -->
-    <div class="col-md-6 col-lg-4 col-xl-2.4">
-        <div class="kanban-column">
-            <h5 class="mb-3">
-                <span class="badge bg-success">Concluído</span>
-                <span class="badge bg-light text-dark">{{ tarefas_concluidas.count }}</span>
-            </h5>
-            <div class="kanban-cards">
-                {% for tarefa in tarefas_concluidas %}
-                <div class="card kanban-card status-concluido">
-                    <div class="card-body p-3">
-                        <h6 class="card-title" style="font-size: 0.9rem; text-decoration: line-through;">
-                            {{ tarefa.titulo }}
-                        </h6>
-                        <p class="card-text" style="font-size: 0.8rem; color: #666; margin-bottom: 0.5rem;">
-                            {{ tarefa.descricao|truncatewords:10 }}
-                        </p>
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-light text-dark" style="font-size: 0.75rem;">
-                                {{ tarefa.projeto.nome }}
-                            </span>
-                            <span class="prioridade-{{ tarefa.prioridade|lower }}">
-                                <i class="bi bi-flag-fill"></i>
-                            </span>
-                        </div>
-                        <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">
-                            Ver
-                        </a>
-                    </div>
-                </div>
-                {% empty %}
-                <p class="text-muted text-center">Nenhuma tarefa</p>
-                {% endfor %}
+  <!-- Em Revisão -->
+  <div class="col-md-6 col-xl">
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <span class="kanban-col-dot" style="background:var(--s-revisao);"></span>
+        <span class="kanban-column-title">Em Revisão</span>
+        <span class="kanban-count" id="cnt-REVISAO">{{ tarefas_revisao.count }}</span>
+      </div>
+      <div class="kanban-cards" data-status="REVISAO">
+        {% for tarefa in tarefas_revisao %}
+        <div class="card kanban-card status-revisao" data-pk="{{ tarefa.id }}" data-status="REVISAO">
+          <div class="card-body p-3">
+            <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+            <h6 class="card-title mb-1" style="font-size:0.875rem;padding-right:1rem;">{{ tarefa.titulo }}</h6>
+            <p class="text-muted mb-2" style="font-size:0.78rem;">{{ tarefa.descricao|truncatewords:10 }}</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge-projeto">{{ tarefa.projeto.nome }}</span>
+              <span class="prioridade-{{ tarefa.prioridade|lower }}" title="{{ tarefa.get_prioridade_display }}">
+                <i class="bi bi-flag-fill"></i>
+              </span>
             </div>
+            <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">Ver</a>
+          </div>
         </div>
+        {% empty %}
+        <p class="text-muted text-center kanban-empty" style="font-size:0.82rem;">Nenhuma tarefa</p>
+        {% endfor %}
+      </div>
     </div>
+  </div>
+
+  <!-- Concluído -->
+  <div class="col-md-6 col-xl">
+    <div class="kanban-column">
+      <div class="kanban-column-header">
+        <span class="kanban-col-dot" style="background:var(--s-concluido);"></span>
+        <span class="kanban-column-title">Concluído</span>
+        <span class="kanban-count" id="cnt-CONCLUIDO">{{ tarefas_concluidas.count }}</span>
+      </div>
+      <div class="kanban-cards" data-status="CONCLUIDO">
+        {% for tarefa in tarefas_concluidas %}
+        <div class="card kanban-card status-concluido" data-pk="{{ tarefa.id }}" data-status="CONCLUIDO">
+          <div class="card-body p-3">
+            <span class="drag-handle"><i class="bi bi-grip-vertical"></i></span>
+            <h6 class="card-title mb-1" style="font-size:0.875rem;padding-right:1rem;text-decoration:line-through;">
+              {{ tarefa.titulo }}
+            </h6>
+            <p class="text-muted mb-2" style="font-size:0.78rem;">{{ tarefa.descricao|truncatewords:10 }}</p>
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge-projeto">{{ tarefa.projeto.nome }}</span>
+              <span class="prioridade-{{ tarefa.prioridade|lower }}" title="{{ tarefa.get_prioridade_display }}">
+                <i class="bi bi-flag-fill"></i>
+              </span>
+            </div>
+            <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-sm btn-outline-primary w-100">Ver</a>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center kanban-empty" style="font-size:0.82rem;">Nenhuma tarefa</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<!-- Botão flutuante para criar nova tarefa -->
-<a href="{% url 'criar_tarefa' %}" class="btn btn-primary btn-lg rounded-circle position-fixed bottom-0 end-0"
-    style="margin: 2rem; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center;">
-    <i class="bi bi-plus-lg" style="font-size: 1.5rem;"></i>
+<!-- Toast -->
+<div id="kanban-toast">
+  <div class="alert mb-0" id="kanban-toast-msg"></div>
+</div>
+
+<!-- FAB -->
+<a href="{% url 'criar_tarefa' %}"
+   class="btn btn-primary btn-lg rounded-circle position-fixed bottom-0 end-0 d-flex align-items-center justify-content-center"
+   style="margin:1.75rem;width:56px;height:56px;box-shadow:0 4px 16px rgba(37,99,235,0.45);"
+   title="Nova Tarefa">
+  <i class="bi bi-plus-lg" style="font-size:1.4rem;"></i>
 </a>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script>
+// ── CSRF via input global colocado em base.html ──
+const CSRF_TOKEN = document.getElementById('csrf-global').value;
+
+// ── mapeamento status → classe CSS ──
+const STATUS_CLASS = {
+  BACKLOG:      'status-backlog',
+  A_FAZER:      'status-a-fazer',
+  EM_ANDAMENTO: 'status-em-andamento',
+  REVISAO:      'status-revisao',
+  CONCLUIDO:    'status-concluido',
+};
+
+// ── mapeamento status → id do stat-card no topo ──
+const STAT_ID = {
+  EM_ANDAMENTO: 'stat-andamento',
+  A_FAZER:      'stat-a-fazer',
+  CONCLUIDO:    'stat-concluidas',
+};
+
+function showToast(msg, type = 'success') {
+  const wrap = document.getElementById('kanban-toast');
+  const el   = document.getElementById('kanban-toast-msg');
+  el.className = `alert mb-0 alert-${type}`;
+  el.textContent = msg;
+  wrap.style.display = 'block';
+  clearTimeout(wrap._t);
+  wrap._t = setTimeout(() => { wrap.style.display = 'none'; }, 2800);
+}
+
+function refreshColumn(cardsEl) {
+  const status = cardsEl.dataset.status;
+  const cards  = cardsEl.querySelectorAll('.kanban-card');
+  const count  = cards.length;
+
+  // contador da coluna
+  document.getElementById('cnt-' + status).textContent = count;
+
+  // mensagem vazio
+  let empty = cardsEl.querySelector('.kanban-empty');
+  if (count === 0) {
+    if (!empty) {
+      empty = document.createElement('p');
+      empty.className = 'text-muted text-center kanban-empty';
+      empty.style.fontSize = '0.82rem';
+      empty.textContent = 'Nenhuma tarefa';
+      cardsEl.appendChild(empty);
+    }
+  } else {
+    empty?.remove();
+  }
+
+  // stat-card no topo
+  const statId = STAT_ID[status];
+  if (statId) {
+    document.getElementById(statId).textContent = count;
+  }
+}
+
+// ── inicializa SortableJS em cada coluna ──
+document.querySelectorAll('.kanban-cards').forEach(col => {
+  Sortable.create(col, {
+    group:      'kanban',
+    animation:  200,
+    ghostClass: 'kanban-ghost',
+    dragClass:  'kanban-dragging',
+
+    onEnd(evt) {
+      const card      = evt.item;
+      const fromCol   = evt.from;
+      const toCol     = evt.to;
+      const newStatus = toCol.dataset.status;
+      const oldStatus = fromCol.dataset.status;
+
+      // atualiza contadores imediatamente
+      refreshColumn(fromCol);
+      refreshColumn(toCol);
+
+      // mesma coluna: nada a salvar
+      if (newStatus === oldStatus) return;
+
+      // atualiza classe de cor do card
+      Object.values(STATUS_CLASS).forEach(c => card.classList.remove(c));
+      card.classList.add(STATUS_CLASS[newStatus]);
+      card.dataset.status = newStatus;
+
+      // linha-através em Concluído
+      const title = card.querySelector('.card-title');
+      title.style.textDecoration = (newStatus === 'CONCLUIDO') ? 'line-through' : '';
+
+      // persiste no servidor
+      fetch(`/tarefas/${card.dataset.pk}/status/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'X-CSRFToken':   CSRF_TOKEN,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        showToast('✓ Status atualizado', 'success');
+      })
+      .catch(err => {
+        console.error('Erro ao atualizar status:', err);
+        // reverte o card
+        fromCol.insertBefore(card, fromCol.children[evt.oldIndex] ?? null);
+        Object.values(STATUS_CLASS).forEach(c => card.classList.remove(c));
+        card.classList.add(STATUS_CLASS[oldStatus]);
+        card.dataset.status = oldStatus;
+        title.style.textDecoration = (oldStatus === 'CONCLUIDO') ? 'line-through' : '';
+        refreshColumn(fromCol);
+        refreshColumn(toCol);
+        showToast('Erro ao salvar. Tente novamente.', 'danger');
+      });
+    },
+  });
+});
+</script>
 {% endblock %}

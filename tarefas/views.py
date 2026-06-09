@@ -1,5 +1,7 @@
+import json
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
@@ -155,6 +157,20 @@ def lista_projetos(request):
     projetos = Projeto.objects.all()
     context = {'projetos': projetos}
     return render(request, 'tarefas/lista_projetos.html', context)
+
+
+@login_required
+def atualizar_status(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'success': False}, status=405)
+    tarefa = get_object_or_404(Tarefa, pk=pk)
+    data = json.loads(request.body)
+    novo_status = data.get('status')
+    if novo_status not in dict(Tarefa.STATUS_CHOICES):
+        return JsonResponse({'success': False, 'error': 'Status inválido'}, status=400)
+    tarefa.status = novo_status
+    tarefa.save()
+    return JsonResponse({'success': True})
 
 
 @login_required
