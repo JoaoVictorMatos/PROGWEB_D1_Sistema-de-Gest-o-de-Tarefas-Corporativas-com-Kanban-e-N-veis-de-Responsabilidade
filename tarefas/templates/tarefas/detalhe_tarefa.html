@@ -1,0 +1,87 @@
+{% extends 'tarefas/base.html' %}
+
+{% block title %}{{ tarefa.titulo }} - Sistema de Gestão de Tarefas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">{{ tarefa.titulo }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Projeto</h6>
+                        <p class="fs-5">{{ tarefa.projeto.nome }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Status</h6>
+                        <p class="fs-5">
+                            <span class="badge"
+                                style="background-color: {% if tarefa.status == 'CONCLUIDO' %}#27ae60{% elif tarefa.status == 'REVISAO' %}#e91e63{% elif tarefa.status == 'EM_ANDAMENTO' %}#3498db{% elif tarefa.status == 'A_FAZER' %}#f39c12{% else %}#95a5a6{% endif %}">
+                                {{ tarefa.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Prioridade</h6>
+                        <p class="fs-5">
+                            <i class="bi bi-flag-fill prioridade-{{ tarefa.prioridade|lower }}"></i>
+                            {{ tarefa.get_prioridade_display }}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Responsável</h6>
+                        <p class="fs-5">
+                            {% if tarefa.responsavel %}
+                            {{ tarefa.responsavel.get_full_name|default:tarefa.responsavel.username }}
+                            {% else %}
+                            <span class="text-muted">Não atribuído</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Data de Criação</h6>
+                        <p class="fs-5">{{ tarefa.data_criacao|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Data de Entrega</h6>
+                        <p class="fs-5">
+                            {% if tarefa.data_entrega %}
+                            {{ tarefa.data_entrega|date:"d/m/Y" }}
+                            {% else %}
+                            <span class="text-muted">Não definida</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <h5>Descrição</h5>
+                <p class="lead">{{ tarefa.descricao }}</p>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'editar_tarefa' tarefa.id %}" class="btn btn-warning">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="{% url 'deletar_tarefa' tarefa.id %}" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Deletar
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

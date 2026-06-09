@@ -1,0 +1,354 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}📊 Kanban Corporativo | {{ block.super }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    important: true,
+    theme: {
+      extend: {
+        colors: {
+          primary: { DEFAULT: '#4a90e2', dark: '#2980b9', light: '#eaf2fb' },
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  /* ─── Layout base ─── */
+  html, body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    background-color: #f5f7fa !important;
+    color: #333 !important;
+  }
+
+  /* ─── Header ─── */
+  #header {
+    background: linear-gradient(135deg, #4a90e2 0%, #3498db 100%) !important;
+    border-bottom: 4px solid #2980b9 !important;
+    padding: 1.2rem 2rem !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+  }
+  #header a, #header h1 { color: #fff !important; }
+  #user-tools a { color: rgba(255,255,255,0.9) !important; }
+  #user-tools a:hover { color: #fff !important; text-decoration: underline !important; }
+
+  /* ─── Sidebar ─── */
+  #nav-sidebar, div[id="nav-sidebar"] {
+    background: #fff !important;
+    border-right: 2px solid #e5e7eb !important;
+  }
+  #nav-sidebar .module caption,
+  div[id="nav-sidebar"] .module caption {
+    background: linear-gradient(135deg, #4a90e2 0%, #3498db 100%) !important;
+    color: #fff !important;
+    padding: 0.75rem 1rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.03em !important;
+    text-transform: uppercase !important;
+    font-size: 0.75rem !important;
+  }
+  #nav-sidebar a, div[id="nav-sidebar"] a {
+    color: #374151 !important;
+    display: block !important;
+    padding: 0.6rem 1.25rem !important;
+    border-left: 3px solid transparent !important;
+    transition: all 0.2s !important;
+    font-size: 0.875rem !important;
+  }
+  #nav-sidebar a:hover, div[id="nav-sidebar"] a:hover {
+    background: #eff6ff !important;
+    color: #4a90e2 !important;
+    border-left-color: #4a90e2 !important;
+  }
+
+  /* ─── Content area ─── */
+  #content { background: #f5f7fa !important; padding: 1.5rem 2rem !important; }
+  #content h1 {
+    color: #1e3a5f !important;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 1.25rem !important;
+    padding-bottom: 0.6rem !important;
+    border-bottom: 2px solid #e5e7eb !important;
+  }
+  #content-main { padding: 0 !important; }
+
+  /* ─── Breadcrumbs ─── */
+  div.breadcrumbs {
+    background: #fff !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 0.6rem 2rem !important;
+    font-size: 0.8rem !important;
+    color: #6b7280 !important;
+  }
+  div.breadcrumbs a { color: #4a90e2 !important; }
+
+  /* ─── Module / App index cards ─── */
+  .module {
+    background: #fff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06) !important;
+    overflow: hidden !important;
+    margin-bottom: 1.5rem !important;
+  }
+  .module caption, .module h2 {
+    background: linear-gradient(135deg, #4a90e2 0%, #3498db 100%) !important;
+    color: #fff !important;
+    padding: 0.75rem 1.25rem !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+  }
+  .module table { box-shadow: none !important; margin: 0 !important; }
+
+  /* ─── Changelist table ─── */
+  #result_list {
+    background: #fff !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    margin-bottom: 1.5rem !important;
+  }
+  #result_list thead th {
+    background: linear-gradient(135deg, #4a90e2 0%, #3498db 100%) !important;
+    color: #fff !important;
+    padding: 0.85rem 1rem !important;
+    font-weight: 600 !important;
+    border: none !important;
+    text-align: left !important;
+    font-size: 0.82rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
+  #result_list thead th a { color: #fff !important; }
+  #result_list tbody tr { border-bottom: 1px solid #f3f4f6 !important; transition: background 0.15s !important; }
+  #result_list tbody tr:hover { background: #eff6ff !important; }
+  #result_list tbody td { padding: 0.75rem 1rem !important; font-size: 0.875rem !important; }
+  #result_list tbody td a { color: #4a90e2 !important; font-weight: 500 !important; }
+  #result_list tbody td a:hover { color: #2980b9 !important; text-decoration: underline !important; }
+
+  /* ─── Filters sidebar ─── */
+  #changelist-filter {
+    background: #fff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.5rem !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+  #changelist-filter h2 {
+    background: linear-gradient(135deg, #4a90e2 0%, #3498db 100%) !important;
+    color: #fff !important;
+    padding: 0.75rem 1rem !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    margin: 0 !important;
+  }
+  #changelist-filter h3 {
+    color: #374151 !important;
+    font-size: 0.8rem !important;
+    font-weight: 700 !important;
+    padding: 0.75rem 1rem 0.4rem !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+    border-top: 1px solid #f3f4f6 !important;
+    margin: 0 !important;
+  }
+  #changelist-filter ul { list-style: none !important; padding: 0 !important; margin: 0 0 0.5rem !important; }
+  #changelist-filter li { padding: 0 !important; }
+  #changelist-filter li a {
+    display: block !important;
+    padding: 0.4rem 1rem !important;
+    color: #374151 !important;
+    font-size: 0.82rem !important;
+    transition: all 0.15s !important;
+  }
+  #changelist-filter li a:hover, #changelist-filter li.selected a {
+    background: #eff6ff !important;
+    color: #4a90e2 !important;
+  }
+
+  /* ─── Forms / Fieldsets ─── */
+  fieldset {
+    background: #fff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.5rem !important;
+    padding: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+  }
+  fieldset h2 {
+    background: #f8fafc !important;
+    color: #4a90e2 !important;
+    margin: -1.5rem -1.5rem 1.25rem !important;
+    padding: 0.7rem 1.5rem !important;
+    border-bottom: 2px solid #4a90e2 !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+  }
+  .form-row { padding: 0.6rem 0 !important; }
+  label { font-weight: 500 !important; font-size: 0.875rem !important; color: #374151 !important; }
+
+  input[type="text"], input[type="password"], input[type="email"],
+  input[type="number"], input[type="date"], textarea, select {
+    width: 100% !important;
+    padding: 0.55rem 0.75rem !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.375rem !important;
+    font-size: 0.875rem !important;
+    font-family: inherit !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+    background: #fff !important;
+  }
+  input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus,
+  input[type="number"]:focus, input[type="date"]:focus, textarea:focus, select:focus {
+    border-color: #4a90e2 !important;
+    box-shadow: 0 0 0 3px rgba(74,144,226,0.15) !important;
+    outline: none !important;
+  }
+
+  /* ─── Submit row & buttons ─── */
+  .submit-row {
+    background: #f8fafc !important;
+    border-top: 1px solid #e5e7eb !important;
+    padding: 1rem 1.5rem !important;
+    display: flex !important;
+    gap: 0.75rem !important;
+    flex-wrap: wrap !important;
+    margin-top: 1.5rem !important;
+    border-radius: 0 0 0.5rem 0.5rem !important;
+  }
+  input[type="submit"], .button, a.button {
+    background: linear-gradient(135deg, #4a90e2, #3498db) !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 0.55rem 1.25rem !important;
+    border-radius: 0.375rem !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+    transition: opacity 0.2s, transform 0.2s !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+  }
+  input[type="submit"]:hover, .button:hover, a.button:hover {
+    opacity: 0.9 !important;
+    transform: translateY(-1px) !important;
+  }
+  input[type="submit"].default {
+    background: linear-gradient(135deg, #27ae60, #1abc9c) !important;
+  }
+  .deletelink { background: linear-gradient(135deg, #e74c3c, #c0392b) !important; }
+
+  /* ─── Actions toolbar ─── */
+  .actions {
+    background: #f8fafc !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 0.375rem !important;
+    padding: 0.6rem 1rem !important;
+    margin-bottom: 1rem !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important;
+    flex-wrap: wrap !important;
+  }
+  .actions select { width: auto !important; }
+  .actions button {
+    background: linear-gradient(135deg, #4a90e2, #3498db) !important;
+    color: #fff !important;
+    border: none !important;
+    padding: 0.4rem 1rem !important;
+    border-radius: 0.375rem !important;
+    font-size: 0.82rem !important;
+    font-weight: 600 !important;
+    cursor: pointer !important;
+  }
+
+  /* ─── Messages ─── */
+  .messagelist { list-style: none !important; padding: 0 !important; margin-bottom: 1.5rem !important; }
+  .messagelist li {
+    padding: 0.8rem 1.25rem !important;
+    border-radius: 0.375rem !important;
+    border-left: 4px solid !important;
+    margin-bottom: 0.6rem !important;
+    font-size: 0.875rem !important;
+  }
+  .messagelist .success { background: #f0fdf4 !important; color: #166534 !important; border-left-color: #22c55e !important; }
+  .messagelist .error   { background: #fef2f2 !important; color: #991b1b !important; border-left-color: #ef4444 !important; }
+  .messagelist .warning { background: #fffbeb !important; color: #92400e !important; border-left-color: #f59e0b !important; }
+  .messagelist .info    { background: #eff6ff !important; color: #1e40af !important; border-left-color: #3b82f6 !important; }
+
+  /* ─── Search bar ─── */
+  #toolbar { background: #fff !important; padding: 0.75rem 1rem !important; border-bottom: 1px solid #e5e7eb !important; }
+  #searchbar {
+    border: 1px solid #d1d5db !important;
+    border-radius: 0.375rem !important;
+    padding: 0.4rem 0.75rem !important;
+    width: 280px !important;
+    font-size: 0.875rem !important;
+  }
+  #searchbar:focus { border-color: #4a90e2 !important; box-shadow: 0 0 0 3px rgba(74,144,226,0.15) !important; outline: none !important; }
+
+  /* ─── Pagination ─── */
+  .paginator {
+    padding: 0.75rem 1rem !important;
+    background: #fff !important;
+    border-top: 1px solid #e5e7eb !important;
+    font-size: 0.82rem !important;
+    color: #6b7280 !important;
+  }
+  .paginator a { color: #4a90e2 !important; }
+
+  /* ─── Object tools (Add/History buttons) ─── */
+  ul.object-tools { list-style: none !important; padding: 0 !important; display: flex !important; gap: 0.5rem !important; }
+  ul.object-tools a {
+    background: linear-gradient(135deg, #4a90e2, #3498db) !important;
+    color: #fff !important;
+    padding: 0.45rem 1rem !important;
+    border-radius: 0.375rem !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.04em !important;
+  }
+  ul.object-tools a.viewsitelink, ul.object-tools a.golink {
+    background: linear-gradient(135deg, #6b7280, #4b5563) !important;
+  }
+
+  /* ─── Footer ─── */
+  #footer {
+    background: #1e3a5f !important;
+    color: rgba(255,255,255,0.7) !important;
+    text-align: center !important;
+    padding: 1rem !important;
+    font-size: 0.8rem !important;
+    margin-top: 2rem !important;
+  }
+</style>
+{% endblock %}
+
+{% block branding %}
+<div class="flex items-center gap-3">
+  <span class="text-3xl">📊</span>
+  <div>
+    <h1 class="text-white font-bold text-xl leading-tight m-0">Kanban Corporativo</h1>
+    <p class="text-white/80 text-xs m-0">Sistema de Gestão de Tarefas</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'tarefas/base.html' %}
+
+{% block title %}Confirmar Exclusão - Sistema de Gestão de Tarefas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Confirmar Exclusão
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">Você tem certeza que deseja deletar esta tarefa?</p>
+                <div class="alert alert-warning">
+                    <strong>{{ tarefa.titulo }}</strong>
+                    <br>
+                    <small class="text-muted">Esta ação não pode ser desfeita.</small>
+                </div>
+            </div>
+            <div class="card-footer">
+                <form method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Deletar
+                    </button>
+                </form>
+                <a href="{% url 'detalhe_tarefa' tarefa.id %}" class="btn btn-secondary">
+                    <i class="bi bi-x-lg"></i> Cancelar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
